@@ -1,12 +1,12 @@
 .app-layout {
-	display: grid;
-	grid-template-columns: auto 1fr;
-	height: 100dvh; /* Constrain to viewport height */
-	overflow: hidden; /* Contain scrolling within children */
+  display: grid;
+  grid-template-columns: auto 1fr;
+  height: 100dvh; /* Constrain to viewport height */
+  overflow: hidden; /* Contain scrolling within children */
 }
 
 .content {
-	min-width: 0;
-	min-height: 0; /* Allow grid child to shrink so overflow works */
-	overflow: auto; /* Only main content scrolls */
+  min-width: 0;
+  min-height: 0; /* Allow grid child to shrink so overflow works */
+  overflow: auto; /* Only main content scrolls */
 }

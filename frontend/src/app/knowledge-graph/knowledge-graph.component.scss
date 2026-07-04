@@ -1,127 +1,126 @@
 .knowledge-graph {
-    height: 100%;
-    width: 100%;
+  height: 100%;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+
+  &__header {
+    padding: 1rem 1.5rem;
+    background: var(--background-color);
+    border-bottom: 1px solid rgba(60, 60, 67, 0.12);
+
+    h2 {
+      margin: 0 0 0.5rem 0;
+      font-size: 1.25rem;
+      font-weight: 600;
+      color: var(--text-primary-color);
+    }
+  }
+
+  &__stats {
     display: flex;
-    flex-direction: column;
+    gap: 1.5rem;
+    align-items: center;
+    flex-wrap: wrap;
 
-    &__header {
-        padding: 1rem 1.5rem;
-        background: var(--background-color);
-        border-bottom: 1px solid rgba(60, 60, 67, 0.12);
+    .stat {
+      display: flex;
+      align-items: center;
+      gap: 0.25rem;
+      font-size: 0.875rem;
+      color: rgba(60, 60, 67, 0.7);
 
-        h2 {
-            margin: 0 0 0.5rem 0;
-            font-size: 1.25rem;
-            font-weight: 600;
-            color: var(--text-primary-color);
+      strong {
+        color: var(--text-primary-color);
+        font-weight: 600;
+      }
+    }
+
+    .stat-details {
+      display: flex;
+      gap: 1rem;
+      flex-wrap: wrap;
+      padding-left: 1rem;
+      border-left: 1px solid rgba(60, 60, 67, 0.12);
+
+      .stat-item {
+        font-size: 0.75rem;
+        color: rgba(60, 60, 67, 0.6);
+
+        strong {
+          color: var(--text-primary-color);
+          font-weight: 600;
         }
+      }
     }
+  }
 
-    &__stats {
-        display: flex;
-        gap: 1.5rem;
-        align-items: center;
-        flex-wrap: wrap;
+  &__loading,
+  &__empty {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex: 1;
+    color: rgba(60, 60, 67, 0.7);
+    font-size: 16px;
+  }
 
-        .stat {
-            display: flex;
-            align-items: center;
-            gap: 0.25rem;
-            font-size: 0.875rem;
-            color: rgba(60, 60, 67, 0.7);
-
-            strong {
-                color: var(--text-primary-color);
-                font-weight: 600;
-            }
-        }
-
-        .stat-details {
-            display: flex;
-            gap: 1rem;
-            flex-wrap: wrap;
-            padding-left: 1rem;
-            border-left: 1px solid rgba(60, 60, 67, 0.12);
-
-            .stat-item {
-                font-size: 0.75rem;
-                color: rgba(60, 60, 67, 0.6);
-
-                strong {
-                    color: var(--text-primary-color);
-                    font-weight: 600;
-                }
-            }
-        }
-    }
-
-    &__loading,
-    &__empty {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        flex: 1;
-        color: rgba(60, 60, 67, 0.7);
-        font-size: 16px;
-    }
-
-    f-flow {
-        flex: 1;
-        height: auto;
-    }
+  f-flow {
+    flex: 1;
+    height: auto;
+  }
 }
 
 .f-flow {
-    height: 100%;
-    width: 100%;
+  height: 100%;
+  width: 100%;
 }
 
 .f-drag-handle {
-    cursor: move;
+  cursor: move;
 }
 
 ::ng-deep {
+  // Define SVG arrow marker
+  svg defs {
+    marker {
+      &#f-marker-arrow {
+        fill: rgba(60, 60, 67, 0.6);
+      }
+    }
+  }
 
-    // Define SVG arrow marker
-    svg defs {
-        marker {
-            &#f-marker-arrow {
-                fill: rgba(60, 60, 67, 0.6);
-            }
-        }
+  .f-connection {
+    .f-connection-drag-handle {
+      fill: transparent;
+      // By default, this element has a black fill and is used to detect the start of dragging (e.g., onmousedown).
+      // We make it transparent to avoid visual clutter, while keeping it functional.
     }
 
-    .f-connection {
-        .f-connection-drag-handle {
-            fill: transparent;
-            // By default, this element has a black fill and is used to detect the start of dragging (e.g., onmousedown).
-            // We make it transparent to avoid visual clutter, while keeping it functional.
-        }
-
-        .f-connection-selection {
-            stroke-width: 10;
-            // This is a pseudo-connection (a copy of the main path) used to make it easier to select the connection.
-            // It's slightly thicker than the actual path (which is often only 1px), making it easier to interact with.
-        }
-
-        .f-connection-path {
-            stroke: rgba(60, 60, 67, 0.6);
-            stroke-width: 2;
-            fill: none;
-        }
-
-        &.f-selected {
-            .f-connection-path {
-                stroke: #3451b2;
-                stroke-width: 3;
-            }
-        }
-
-        &:hover {
-            .f-connection-path {
-                stroke: rgba(60, 60, 67, 0.9);
-                stroke-width: 3;
-            }
-        }
+    .f-connection-selection {
+      stroke-width: 10;
+      // This is a pseudo-connection (a copy of the main path) used to make it easier to select the connection.
+      // It's slightly thicker than the actual path (which is often only 1px), making it easier to interact with.
     }
+
+    .f-connection-path {
+      stroke: rgba(60, 60, 67, 0.6);
+      stroke-width: 2;
+      fill: none;
+    }
+
+    &.f-selected {
+      .f-connection-path {
+        stroke: #3451b2;
+        stroke-width: 3;
+      }
+    }
+
+    &:hover {
+      .f-connection-path {
+        stroke: rgba(60, 60, 67, 0.9);
+        stroke-width: 3;
+      }
+    }
+  }
 }

@@ -14,7 +14,9 @@
                 "ms-azuretools.vscode-docker",
                 "tamasfe.even-better-toml",
                 "redhat.vscode-yaml",
-                "charliermarsh.ruff"
+                "charliermarsh.ruff",
+                "esbenp.prettier-vscode",
+                "dbaeumer.vscode-eslint"
             ]
         }
     },

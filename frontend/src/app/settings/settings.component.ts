@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, signal, inject, effect } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ButtonModule } from 'primeng/button';
-import { SettingsService } from './settings.service';
+import { SettingsService, SettingsConfigResponse } from './settings.service';
 
 interface ConfigSection {
   title: string;
@@ -14,7 +14,7 @@ interface ConfigSection {
   templateUrl: './settings.component.html',
   styleUrls: ['./settings.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, ButtonModule]
+  imports: [CommonModule, ButtonModule],
 })
 export class SettingsComponent {
   private readonly settings = inject(SettingsService);
@@ -26,50 +26,53 @@ export class SettingsComponent {
   configError = signal('');
 
   constructor() {
-    effect(() => {
-      this.loadConfig();
-    }, { allowSignalWrites: true });
+    effect(
+      () => {
+        this.loadConfig();
+      },
+      { allowSignalWrites: true },
+    );
   }
 
   async loadConfig() {
     this.configLoading.set(true);
     this.configError.set('');
     try {
-      const rawConfig = await this.settings.getConfig();
+      const rawConfig: SettingsConfigResponse = await this.settings.getConfig();
       const sections: Record<string, ConfigSection> = {
         app: {
           title: 'Application',
           isDev: rawConfig.app?.environment === 'development',
-          items: rawConfig.app || {}
+          items: rawConfig.app || {},
         },
         auth: {
           title: 'Authentication',
-          items: rawConfig.auth || {}
+          items: rawConfig.auth || {},
         },
         llm: {
           title: 'Language Model',
-          items: rawConfig.llm || {}
+          items: rawConfig.llm || {},
         },
         embedding: {
           title: 'Embedding',
-          items: rawConfig.embedding || {}
+          items: rawConfig.embedding || {},
         },
         neo4j: {
           title: 'Graph Database',
-          items: rawConfig.neo4j || {}
+          items: rawConfig.neo4j || {},
         },
         jira: {
           title: 'Jira Integration',
-          items: { configured: rawConfig.jira?.configured }
+          items: { configured: rawConfig.jira?.configured },
         },
         confluence: {
           title: 'Confluence Integration',
-          items: { configured: rawConfig.confluence?.configured }
+          items: { configured: rawConfig.confluence?.configured },
         },
         github: {
           title: 'GitHub Integration',
-          items: { configured: rawConfig.github?.configured }
-        }
+          items: { configured: rawConfig.github?.configured },
+        },
       };
       this.config.set(sections);
     } catch (err) {
@@ -79,11 +82,11 @@ export class SettingsComponent {
     }
   }
 
-  getSectionEntries(section: ConfigSection): [string, any][] {
+  getSectionEntries(section: ConfigSection): [string, unknown][] {
     return Object.entries(section.items).filter(([, val]) => val !== null && val !== undefined);
   }
 
-  formatValue(value: any): string {
+  formatValue(value: unknown): string {
     if (typeof value === 'boolean') {
       return value ? '✓ Yes' : '✗ No';
     }

@@ -1,22 +1,25 @@
 <aside class="sidebar">
-    <div class="brand">
-        <img src="/The_Kraken.png" alt="Projekt Kraken Logo" class="brand-logo" width="36" />
-        @if(!collapsed){
-        <span class="name">Projekt Kraken</span>
+  <div class="brand">
+    <img src="/The_Kraken.png" alt="Projekt Kraken Logo" class="brand-logo" width="36" />
+    @if (!collapsed) {
+      <span class="name">Projekt Kraken</span>
+    }
+    <button class="collapse" type="button" (click)="toggleCollapse()" aria-label="Toggle sidebar">
+      <span aria-hidden="true">{{ collapsed ? '›' : '‹' }}</span>
+    </button>
+  </div>
+  <nav class="nav">
+    @for (item of items; track item.route) {
+      <a
+        [routerLink]="item.route"
+        routerLinkActive="active"
+        [routerLinkActiveOptions]="{ exact: true }"
+      >
+        <i [class]="'pi ' + item.icon" aria-hidden="true"></i>
+        @if (!collapsed) {
+          <span class="label">{{ item.label }}</span>
         }
-        <button class="collapse" type="button" (click)="toggleCollapse()" aria-label="Toggle sidebar">
-            <span aria-hidden="true">{{ collapsed ? '›' : '‹' }}</span>
-        </button>
-    </div>
-    <nav class="nav">
-        @for (item of items; track item.route) {
-        <a [routerLink]="item.route" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">
-            <i [class]="'pi ' + item.icon" aria-hidden="true"></i>
-            @if(!collapsed){
-            <span class="label">{{ item.label }}</span>
-            }
-        </a>
-        }
-    </nav>
-
+      </a>
+    }
+  </nav>
 </aside>

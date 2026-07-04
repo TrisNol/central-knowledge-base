@@ -57,14 +57,14 @@ export interface GraphResponse {
 export class KnowledgeGraphService {
   private readonly apiBase = environment.apiBase;
 
-  async fetchGraph(limit: number = 100): Promise<GraphResponse> {
+  async fetchGraph(limit = 100): Promise<GraphResponse> {
     const url = `${this.apiBase}/graph?limit=${limit}`;
 
     try {
       const res = await fetch(url, {
         method: 'GET',
         headers: {
-          'Accept': 'application/json',
+          Accept: 'application/json',
         },
         credentials: 'include',
       });
@@ -76,9 +76,9 @@ export class KnowledgeGraphService {
       const data = (await res.json()) as GraphResponse;
 
       // Add iconUrl to each node
-      data.nodes = data.nodes.map(node => ({
+      data.nodes = data.nodes.map((node) => ({
         ...node,
-        iconUrl: `${this.apiBase}/icon?type=${encodeURIComponent(node.type)}`
+        iconUrl: `${this.apiBase}/icon?type=${encodeURIComponent(node.type)}`,
       }));
 
       return data;
@@ -96,7 +96,7 @@ export class KnowledgeGraphService {
       const res = await fetch(url, {
         method: 'GET',
         headers: {
-          'Accept': 'application/json',
+          Accept: 'application/json',
         },
         credentials: 'include',
       });
@@ -113,14 +113,14 @@ export class KnowledgeGraphService {
     }
   }
 
-  async fetchDocumentRelationships(docId: string, depth: number = 1): Promise<GraphResponse> {
+  async fetchDocumentRelationships(docId: string, depth = 1): Promise<GraphResponse> {
     const url = `${this.apiBase}/graph/document/${encodeURIComponent(docId)}?depth=${depth}`;
 
     try {
       const res = await fetch(url, {
         method: 'GET',
         headers: {
-          'Accept': 'application/json',
+          Accept: 'application/json',
         },
         credentials: 'include',
       });
@@ -132,9 +132,9 @@ export class KnowledgeGraphService {
       const data = (await res.json()) as GraphResponse;
 
       // Add iconUrl to each node
-      data.nodes = data.nodes.map(node => ({
+      data.nodes = data.nodes.map((node) => ({
         ...node,
-        iconUrl: `${this.apiBase}/icon?type=${encodeURIComponent(node.type)}`
+        iconUrl: `${this.apiBase}/icon?type=${encodeURIComponent(node.type)}`,
       }));
 
       return data;

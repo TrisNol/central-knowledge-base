@@ -80,25 +80,15 @@ jobs:
         run: |
           npm ci
 
-      - name: Verify dependency tree
+      - name: Run linting checks
         working-directory: frontend
         run: |
-          npm ls
-
-      - name: Run type checking
-        working-directory: frontend
-        run: |
-          npx tsc --noEmit
-
-      - name: Run ESLint
-        working-directory: frontend
-        run: |
-          npx eslint src --ext .ts,.html
+          npm run lint
 
       - name: Run Prettier format check
         working-directory: frontend
         run: |
-          npx prettier --check src
+          npm run format -- --check
 
       - name: Build Angular application
         working-directory: frontend
