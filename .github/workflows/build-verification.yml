@@ -1,0 +1,146 @@
+name: Build Verification
+
+on:
+  pull_request:
+    branches:
+      - main
+      - develop
+  push:
+    branches:
+      - main
+      - develop
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+  checks: write
+
+jobs:
+  python-build:
+    name: Python Backend Build Verification
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v7.0.0
+
+      - name: Set up Python
+        uses: actions/setup-python@v6.3.0
+        with:
+          python-version: '3.12'
+          cache: 'pip'
+
+      - name: Install Poetry
+        run: |
+          pip install poetry
+
+      - name: Cache Poetry dependencies
+        uses: actions/cache@v6.1.0
+        with:
+          path: ~/.cache/pypoetry
+          key: ${{ runner.os }}-poetry-${{ hashFiles('**/poetry.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-poetry-
+
+      - name: Install Python dependencies
+        run: |
+          poetry install
+
+      - name: Run pre-commit checks
+        run: |
+          poetry run pre-commit run --all-files
+
+      - name: Backend health check
+        run: |
+          echo "✓ All pre-commit checks passed"
+          echo "✓ Code formatting and linting validated"
+          echo "✓ Security scanning complete"
+          echo "Python backend build verification complete"
+
+  angular-build:
+    name: Angular Frontend Build Verification
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v7.0.0
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v6.4.0
+        with:
+          node-version: '22'
+          cache: 'npm'
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install frontend dependencies
+        working-directory: frontend
+        run: |
+          npm ci
+
+      - name: Run linting checks
+        working-directory: frontend
+        run: |
+          npm run lint
+
+      - name: Run Prettier format check
+        working-directory: frontend
+        run: |
+          npm run format -- --check
+
+      - name: Build Angular application
+        working-directory: frontend
+        run: |
+          npm run build -- --configuration production
+
+      - name: Verify build artifacts
+        working-directory: frontend
+        run: |
+          if [ -d "dist" ]; then
+            echo "✓ Build artifacts generated successfully"
+            du -sh dist/
+            find dist -name "*.js" -o -name "*.css" | head -5
+          else
+            echo "✗ Build artifacts not found"
+            exit 1
+          fi
+
+      - name: Frontend health check
+        run: |
+          echo "✓ Node dependencies verified"
+          echo "✓ TypeScript compilation successful"
+          echo "✓ Code formatting validated"
+          echo "✓ Angular build successful"
+          echo "Frontend build verification complete"
+
+  build-summary:
+    name: Build Verification Summary
+    runs-on: ubuntu-24.04
+    needs: [python-build, angular-build]
+    if: always()
+    steps:
+      - name: Check build status
+        run: |
+          {
+            echo "### Build Verification Results"
+            echo ""
+            echo "| Component | Status |"
+            echo "|-----------|--------|"
+            echo "| Python Backend | ${{ needs.python-build.result }} |"
+            echo "| Angular Frontend | ${{ needs.angular-build.result }} |"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Fail if any build failed
+        if: |
+          needs.python-build.result == 'failure' ||
+          needs.angular-build.result == 'failure'
+        run: |
+          echo "❌ Build verification failed. Please review the logs above."
+          exit 1
+
+      - name: Success notification
+        if: success()
+        run: |
+          echo "✅ All build verifications passed successfully!"

@@ -1,11 +1,11 @@
 import os
 
-from dotenv import load_dotenv
 from dependency_injector import containers, providers
+from dotenv import load_dotenv
 
-from src.core.auth.models import OAuthClientRegistration, OAuthProvider
 from src.core.atlassian.confluence_loader import ConfluenceLoader
 from src.core.atlassian.jira_loader import JiraLoader
+from src.core.auth.models import OAuthClientRegistration, OAuthProvider
 from src.core.chunk_retriever import ChunkRetriever
 from src.core.document_chunk_writer import DocumentChunkWriter
 from src.core.git.github_loader import GitHubLoader
@@ -49,10 +49,14 @@ def build_fallback_access_tokens_from_env() -> dict[OAuthProvider, str]:
     return result
 
 
-def build_preconfigured_clients_from_env() -> dict[OAuthProvider, OAuthClientRegistration]:
+def build_preconfigured_clients_from_env() -> dict[
+    OAuthProvider, OAuthClientRegistration
+]:
     clients: dict[OAuthProvider, OAuthClientRegistration] = {}
 
-    github_client_id = os.getenv("GITHUB_OAUTH_CLIENT_ID") or os.getenv("GITHUB_APP_CLIENT_ID")
+    github_client_id = os.getenv("GITHUB_OAUTH_CLIENT_ID") or os.getenv(
+        "GITHUB_APP_CLIENT_ID"
+    )
     github_client_secret = os.getenv("GITHUB_OAUTH_CLIENT_SECRET") or os.getenv(
         "GITHUB_APP_CLIENT_SECRET"
     )
@@ -78,8 +82,12 @@ def load_env_config() -> dict:
             "port": int(os.getenv("PORT", 8000)),
         },
         "auth": {
-            "frontend_base_url": os.getenv("AUTH_FRONTEND_BASE_URL", "http://localhost:4200"),
-            "backend_base_url": os.getenv("AUTH_BACKEND_BASE_URL", "http://localhost:8000"),
+            "frontend_base_url": os.getenv(
+                "AUTH_FRONTEND_BASE_URL", "http://localhost:4200"
+            ),
+            "backend_base_url": os.getenv(
+                "AUTH_BACKEND_BASE_URL", "http://localhost:8000"
+            ),
         },
         "jira": {
             "url": os.getenv("JIRA_URL"),

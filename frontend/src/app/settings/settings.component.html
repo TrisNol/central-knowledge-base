@@ -3,14 +3,14 @@
 
   <div class="config-section">
     <h3>Configuration</h3>
-    
+
     @if (configLoading()) {
       <div class="loading">Loading configuration...</div>
     }
     @if (configError()) {
       <div class="error">{{ configError() }}</div>
     }
-    
+
     @if (config()) {
       <div class="config-items">
         @for (section of config() | keyvalue; track section.key) {
@@ -24,7 +24,7 @@
                 <span class="badge production">Production</span>
               }
             </div>
-            
+
             <div class="group-items">
               @for (item of getSectionEntries(section.value); track item[0]) {
                 <div class="config-item">
@@ -42,8 +42,12 @@
   </div>
 
   <div class="actions">
-    <button pButton type="button" label="Ingest data to Knowledge Graph" (click)="ingest()" [disabled]="isWorking()"></button>
-    <button pButton type="button" label="Reset Knowledge Graph" (click)="clear()" [disabled]="isWorking()"></button>
+    <button pButton type="button" (click)="ingest()" [disabled]="isWorking()">
+      Ingest data to Knowledge Graph
+    </button>
+    <button pButton type="button" (click)="clear()" [disabled]="isWorking()">
+      Reset Knowledge Graph
+    </button>
   </div>
 
   @if (message()) {

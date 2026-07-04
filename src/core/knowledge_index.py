@@ -1,9 +1,11 @@
-from haystack import Document, Pipeline
-from haystack.components.preprocessors import DocumentSplitter
 from typing import Optional
 
-from src.core.relationship_manager import RelationshipManager
+from haystack import Document, Pipeline
+from haystack.components.preprocessors import DocumentSplitter
+
 from src.core.document_chunk_writer import DocumentChunkWriter
+from src.core.relationship_manager import RelationshipManager
+
 
 class KrakenDocumentSplitter(DocumentSplitter):
     def split(self, document: Document):
@@ -56,16 +58,17 @@ class KrakenDocumentSplitter(DocumentSplitter):
             ]
         return [document]
 
+
 class KnowledgeIndex:
     indexing_pipeline: Pipeline = None
     relationship_manager: Optional[RelationshipManager] = None
     chunk_writer: Optional[DocumentChunkWriter] = None
 
     def __init__(
-        self, 
+        self,
         document_embedder,
         relationship_manager: Optional[RelationshipManager] = None,
-        chunk_writer: Optional[DocumentChunkWriter] = None
+        chunk_writer: Optional[DocumentChunkWriter] = None,
     ):
         splitter = KrakenDocumentSplitter()
 
@@ -73,27 +76,31 @@ class KnowledgeIndex:
         self.indexing_pipeline = Pipeline()
         self.indexing_pipeline.add_component("splitter", splitter)
         self.indexing_pipeline.add_component("embedder", document_embedder)
-        
+
         # Use custom chunk writer if provided
         if chunk_writer:
             self.chunk_writer = chunk_writer
             self.indexing_pipeline.add_component("writer", chunk_writer)
-        
+
         self.indexing_pipeline.connect("splitter", "embedder")
         self.indexing_pipeline.connect("embedder", "writer")
-        
+
         # Store relationship manager for creating document links
         self.relationship_manager = relationship_manager
 
     def create_index(self, documents: list[Document]):
         # Filter out documents with less than 50 characters
-        documents = [d for d in documents if getattr(d, "content", None) and len(str(d.content)) >= 50]
+        documents = [
+            d
+            for d in documents
+            if getattr(d, "content", None) and len(str(d.content)) >= 50
+        ]
         if not documents:
             return
-        
+
         # Index documents FIRST (creates Document + Chunk nodes in Neo4j)
         self.indexing_pipeline.run({"documents": documents})
-        
+
         # Create relationships AFTER indexing (now MATCH queries can find the Document nodes)
         if self.relationship_manager:
             try:
@@ -106,25 +113,31 @@ class KnowledgeIndex:
         """Remove links property from all Document nodes in Neo4j."""
         if not self.chunk_writer:
             return
-        
+
         try:
             from neo4j import GraphDatabase
+
             driver = GraphDatabase.driver(
                 self.chunk_writer.neo4j_url,
-                auth=(self.chunk_writer.neo4j_username, self.chunk_writer.neo4j_password)
+                auth=(
+                    self.chunk_writer.neo4j_username,
+                    self.chunk_writer.neo4j_password,
+                ),
             )
-            
+
             with driver.session(database=self.chunk_writer.neo4j_database) as session:
-                result = session.run("""
+                result = session.run(
+                    """
                     MATCH (d:Document)
                     WHERE d.links IS NOT NULL
                     REMOVE d.links
                     RETURN count(d) as cleaned
-                """)
+                """
+                )
                 record = result.single()
                 if record:
                     print(f"Cleaned links from {record['cleaned']} document nodes")
-            
+
             driver.close()
         except Exception as e:
             print(f"Warning: Failed to clean links from database: {e}")
@@ -133,27 +146,33 @@ class KnowledgeIndex:
         """Get statistics about indexed documents and chunks."""
         if not self.chunk_writer:
             return {}
-        
+
         try:
             from neo4j import GraphDatabase
+
             driver = GraphDatabase.driver(
                 self.chunk_writer.neo4j_url,
-                auth=(self.chunk_writer.neo4j_username, self.chunk_writer.neo4j_password)
+                auth=(
+                    self.chunk_writer.neo4j_username,
+                    self.chunk_writer.neo4j_password,
+                ),
             )
-            
+
             with driver.session(database=self.chunk_writer.neo4j_database) as session:
-                result = session.run("""
+                result = session.run(
+                    """
                     MATCH (d:Document)
                     OPTIONAL MATCH (d)<-[:PART_OF]-(c:Chunk)
                     RETURN count(DISTINCT d) as documents, count(c) as chunks
-                """)
+                """
+                )
                 record = result.single()
                 if record:
                     return {
-                        "documents": record['documents'],
-                        "chunks": record['chunks']
+                        "documents": record["documents"],
+                        "chunks": record["chunks"],
                     }
-            
+
             driver.close()
         except Exception as e:
             print(f"Warning: Failed to get index stats: {e}")
@@ -163,24 +182,32 @@ class KnowledgeIndex:
         """Clear all Document and Chunk nodes from Neo4j."""
         if not self.chunk_writer:
             return
-        
+
         try:
             from neo4j import GraphDatabase
+
             driver = GraphDatabase.driver(
                 self.chunk_writer.neo4j_url,
-                auth=(self.chunk_writer.neo4j_username, self.chunk_writer.neo4j_password)
+                auth=(
+                    self.chunk_writer.neo4j_username,
+                    self.chunk_writer.neo4j_password,
+                ),
             )
-            
+
             with driver.session(database=self.chunk_writer.neo4j_database) as session:
-                session.run("""
+                session.run(
+                    """
                     MATCH (c:Chunk)
                     DETACH DELETE c
-                """)
-                session.run("""
+                """
+                )
+                session.run(
+                    """
                     MATCH (d:Document)
                     DETACH DELETE d
-                """)
-            
+                """
+                )
+
             driver.close()
         except Exception as e:
             print(f"Warning: Failed to clear index: {e}")

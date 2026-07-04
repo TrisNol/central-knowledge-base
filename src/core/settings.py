@@ -4,38 +4,33 @@ from haystack.utils import Secret
 
 # ollama providers
 try:
-    from haystack_integrations.components.generators.ollama import (
-        OllamaChatGenerator,
-    )
-    from haystack_integrations.components.embedders.ollama import (
-        OllamaTextEmbedder,
-    )
+    from haystack_integrations.components.embedders.ollama import OllamaTextEmbedder
     from haystack_integrations.components.embedders.ollama.document_embedder import (
         OllamaDocumentEmbedder,
     )
+    from haystack_integrations.components.generators.ollama import OllamaChatGenerator
 except Exception:
     OllamaChatGenerator = OllamaTextEmbedder = OllamaDocumentEmbedder = None
 
 # OpenAI providers
 try:
+    from haystack.components.embedders import OpenAIDocumentEmbedder, OpenAITextEmbedder
     from haystack.components.generators.chat import OpenAIChatGenerator
-    from haystack.components.embedders import OpenAITextEmbedder, OpenAIDocumentEmbedder
 except Exception:
-    OpenAIChatGenerator = OpenAITextEmbedder = (
-        OpenAIDocumentEmbedder
-    ) = None
+    OpenAIChatGenerator = OpenAITextEmbedder = OpenAIDocumentEmbedder = None
 
 # AzureOpenAI providers
 try:
-    from haystack.components.generators.chat import AzureOpenAIChatGenerator
     from haystack.components.embedders import (
-        AzureOpenAITextEmbedder,
         AzureOpenAIDocumentEmbedder,
+        AzureOpenAITextEmbedder,
     )
+    from haystack.components.generators.chat import AzureOpenAIChatGenerator
 except Exception:
-    AzureOpenAIChatGenerator = AzureOpenAITextEmbedder = (
-        AzureOpenAIDocumentEmbedder
-    ) = None
+    AzureOpenAIChatGenerator = AzureOpenAITextEmbedder = AzureOpenAIDocumentEmbedder = (
+        None
+    )
+
 
 def create_llm_generator(
     provider: str,
@@ -62,7 +57,7 @@ def create_llm_generator(
         raise ImportError(
             "OpenAI chat generator is not available. Install haystack with OpenAI support."
         )
-    elif provider == 'azure':
+    elif provider == "azure":
         if AzureOpenAIChatGenerator is None:
             raise ImportError(
                 "Azure OpenAI chat generator is not available. Install haystack with Azure OpenAI support."
@@ -72,7 +67,7 @@ def create_llm_generator(
             api_key=Secret.from_token(azure_openai_api_key),
             model=azure_deployment_name or model,
         )
-    elif provider == 'ollama':
+    elif provider == "ollama":
         if OllamaChatGenerator is None:
             raise ImportError(
                 "Ollama chat generator is not available. Install haystack-integrations with Ollama support."
@@ -107,7 +102,7 @@ def create_text_embedder(
             api_key=Secret.from_token(openai_api_key),
             dimensions=embedding_dimension,
         )
-    elif provider == 'azure':
+    elif provider == "azure":
         if AzureOpenAITextEmbedder is None:
             raise ImportError(
                 "Azure OpenAI text embedder is not available. Install haystack with Azure OpenAI support."
@@ -119,7 +114,7 @@ def create_text_embedder(
             api_version=azure_openai_api_version,
             dimensions=embedding_dimension,
         )
-    elif provider == 'ollama':
+    elif provider == "ollama":
         if OllamaTextEmbedder is None:
             raise ImportError(
                 "Ollama text embedder is not available. Install haystack-integrations with Ollama support."
@@ -154,7 +149,7 @@ def create_document_embedder(
             api_key=Secret.from_token(openai_api_key),
             dimensions=embedding_dimension,
         )
-    elif provider == 'azure':
+    elif provider == "azure":
         if AzureOpenAIDocumentEmbedder is None:
             raise ImportError(
                 "Azure OpenAI document embedder is not available. Install haystack with Azure OpenAI support."
@@ -166,7 +161,7 @@ def create_document_embedder(
             api_version=azure_openai_api_version,
             dimensions=embedding_dimension,
         )
-    elif provider == 'ollama':
+    elif provider == "ollama":
         if OllamaDocumentEmbedder is None:
             raise ImportError(
                 "Ollama document embedder is not available. Install haystack-integrations with Ollama support."

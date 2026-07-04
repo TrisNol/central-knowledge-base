@@ -30,11 +30,11 @@ export interface ChatMessage {
 
 export interface ChatHistoryResponse {
   session_id: string;
-  messages: Array<{
+  messages: {
     role: string;
     content: string;
     timestamp: string;
-    sources?: Array<{
+    sources?: {
       source?: string;
       type: 'JIRA' | 'CONFLUENCE' | 'GITHUB';
       last_updated?: string;
@@ -47,8 +47,8 @@ export interface ChatHistoryResponse {
       file_path?: string;
       commit_hash?: string;
       ref?: string;
-    }>;
-  }>;
+    }[];
+  }[];
 }
 
 export interface ProviderStatus {
@@ -76,7 +76,7 @@ export class ChatService {
       const res = await fetch(url, {
         method: 'GET',
         headers: {
-          'Accept': 'application/json',
+          Accept: 'application/json',
         },
         credentials: 'include',
       });
@@ -87,7 +87,7 @@ export class ChatService {
       }
 
       const data = (await res.json()) as ChatHistoryResponse;
-      
+
       // Convert backend format to frontend ChatMessage format
       return data.messages.map((msg) => {
         const message: ChatMessage = {
@@ -96,11 +96,12 @@ export class ChatService {
           content: msg.content,
           createdAt: new Date(msg.timestamp),
         };
-        
+
         // Convert sources to refs if present
         if (msg.sources && msg.sources.length > 0) {
           message.refs = msg.sources.map((doc): ChatReference => {
-            const icon: ChatReference['icon'] = doc.type === 'GITHUB' ? 'code' : doc.type === 'CONFLUENCE' ? 'doc' : 'link';
+            const icon: ChatReference['icon'] =
+              doc.type === 'GITHUB' ? 'code' : doc.type === 'CONFLUENCE' ? 'doc' : 'link';
             const iconUrl = `${this.apiBase}/icon?type=${encodeURIComponent(doc.type)}`;
 
             // Prefer backend-provided link in `source`, otherwise try to construct a sensible fallback
@@ -109,7 +110,7 @@ export class ChatService {
               const ref = doc.ref || 'main';
               url = `https://github.com/${doc.repo_name}/blob/${encodeURIComponent(ref)}/${doc.file_path}`;
             }
-            
+
             let title: string;
             switch (doc.type) {
               case 'JIRA':
@@ -132,11 +133,11 @@ export class ChatService {
               default:
                 title = doc.type ?? 'Document';
             }
-            
+
             return { title, url: url || '#', icon, iconUrl };
           });
         }
-        
+
         return message;
       });
     } catch (err) {
@@ -152,7 +153,7 @@ export class ChatService {
       const res = await fetch(url, {
         method: 'POST',
         headers: {
-          'Accept': 'application/json',
+          Accept: 'application/json',
         },
         credentials: 'include',
       });
@@ -172,7 +173,7 @@ export class ChatService {
       const res = await fetch(url, {
         method: 'GET',
         headers: {
-          'Accept': 'application/json',
+          Accept: 'application/json',
         },
         credentials: 'include',
       });
@@ -203,7 +204,7 @@ export class ChatService {
       const res = await fetch(url, {
         method: 'POST',
         headers: {
-          'Accept': 'application/json',
+          Accept: 'application/json',
         },
         credentials: 'include',
       });
@@ -218,13 +219,13 @@ export class ChatService {
     prompt: string,
     sources: string[],
     chatMode: ChatMode = 'mcp',
-    mcpAuthType: MCPAuthType = 'oauth'
+    mcpAuthType: MCPAuthType = 'oauth',
   ): Promise<Omit<ChatMessage, 'id' | 'role' | 'createdAt'>> {
     const url = `${this.apiBase}/ask`;
 
     try {
-      const payload = { 
-        question: prompt, 
+      const payload = {
+        question: prompt,
         sources,
         chat_mode: chatMode,
         mcp_auth_type: mcpAuthType,
@@ -233,7 +234,7 @@ export class ChatService {
       const res = await fetch(url, {
         method: 'POST',
         headers: {
-          'Accept': 'application/json',
+          Accept: 'application/json',
           'Content-Type': 'application/json',
         },
         credentials: 'include',
@@ -267,7 +268,8 @@ export class ChatService {
       const data = (await res.json()) as ResponseModel;
 
       const refs: ChatReference[] = (data.source_documents ?? []).map((doc): ChatReference => {
-        const icon: ChatReference['icon'] = doc.type === 'GITHUB' ? 'code' : doc.type === 'CONFLUENCE' ? 'doc' : 'link';
+        const icon: ChatReference['icon'] =
+          doc.type === 'GITHUB' ? 'code' : doc.type === 'CONFLUENCE' ? 'doc' : 'link';
         const iconUrl = `${this.apiBase}/icon?type=${encodeURIComponent(doc.type)}`;
 
         let url = doc.source || '';
@@ -275,7 +277,7 @@ export class ChatService {
           const ref = doc.ref || 'main';
           url = `https://github.com/${doc.repo_name}/blob/${encodeURIComponent(ref)}/${doc.file_path}`;
         }
-        
+
         let title: string;
         switch (doc.type) {
           case 'JIRA':
@@ -306,7 +308,7 @@ export class ChatService {
       const message = err instanceof Error ? err.message : 'Unknown error';
       return {
         content: `Sorry, I couldn't get an answer from the server. ${message}`,
-        refs: []
+        refs: [],
       };
     }
   }

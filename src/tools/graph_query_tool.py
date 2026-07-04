@@ -113,8 +113,12 @@ class GraphQuery:
 
         # Exact-match properties
         exact_fields = [
-            "type", "issue_key", "project_key", "space_key",
-            "page_id", "repo_name",
+            "type",
+            "issue_key",
+            "project_key",
+            "space_key",
+            "page_id",
+            "repo_name",
         ]
         for field in exact_fields:
             if field in filters and filters[field]:

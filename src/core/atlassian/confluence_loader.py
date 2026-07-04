@@ -1,8 +1,9 @@
-from atlassian import Confluence
 from datetime import datetime
 from typing import Any
 
+from atlassian import Confluence
 from haystack import Document
+
 from src.common.models import ConfluenceMetadata, DocumentSourceType
 from src.core.atlassian import convert_to_markdown
 from src.core.link_extractor import LinkExtractor
@@ -39,7 +40,9 @@ def normalize_when(when: Any) -> str:
         try:
             # Handle trailing Z by converting to +00:00 for fromisoformat
             if when_str.endswith("Z"):
-                return datetime.fromisoformat(when_str.replace("Z", "+00:00")).isoformat()
+                return datetime.fromisoformat(
+                    when_str.replace("Z", "+00:00")
+                ).isoformat()
             return datetime.fromisoformat(when_str).isoformat()
         except Exception:
             # Not ISO-parseable — return the original trimmed string
@@ -115,14 +118,14 @@ class ConfluenceLoader:
                 # The get_all_pages_from_space response does not include lastModified
                 # consistently; fall back to the page 'version' or None
                 when = normalize_when(page.get("version", {}).get("when"))
-                
+
                 # Extract links from page content
                 links = LinkExtractor.extract_links_for_confluence(
                     content=page_content,
                     current_page_id=content_id,
-                    confluence_url=self.confluence.url
+                    confluence_url=self.confluence.url,
                 )
-                
+
                 metadata = {
                     "source": f"{self.confluence.url}/spaces/{space_key}/pages/{content_id}",
                     "when": when,
@@ -131,7 +134,9 @@ class ConfluenceLoader:
                     "links": links,
                 }
 
-                document = Document(content=convert_to_markdown(page_content), meta=metadata)
+                document = Document(
+                    content=convert_to_markdown(page_content), meta=metadata
+                )
                 documents.append(map_to_confluence_doc(document))
 
                 if self.include_attachments:
@@ -142,7 +147,9 @@ class ConfluenceLoader:
                         )
                         attachment_metadata = {
                             "source": f"{self.confluence.url}/spaces/{space_key}/pages/{content_id}/attachments/{attachment['id']}",
-                            "when": normalize_when(attachment.get("version", {}).get("when")),
+                            "when": normalize_when(
+                                attachment.get("version", {}).get("when")
+                            ),
                             "id": attachment["id"],
                         }
                         attachment_document = Document(

@@ -1,9 +1,9 @@
 <div class="node">
-    @if (iconUrl()) {
+  @if (iconUrl()) {
     <img class="node__icon" [src]="iconUrl()" alt="" />
-    }
-    <div class="node__title">{{title()}}</div>
-    <a class="node__link" [href]="url()" target="_blank" rel="noopener noreferrer">
-        <p-button label="Open" icon="pi pi-external-link" />
-    </a>
+  }
+  <div class="node__title">{{ title() }}</div>
+  <a class="node__link" [href]="url()" target="_blank" rel="noopener noreferrer">
+    <p-button label="Open" icon="pi pi-external-link" />
+  </a>
 </div>

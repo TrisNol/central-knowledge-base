@@ -4,7 +4,6 @@ from haystack_integrations.tools.mcp import MCPToolset, StreamableHttpServerInfo
 
 from src.core.auth.models import OAuthProvider
 
-
 _PROVIDER_ENDPOINTS = {
     OAuthProvider.GITHUB: "https://api.githubcopilot.com/mcp/",
     OAuthProvider.ATLASSIAN: "https://mcp.atlassian.com/v1/mcp",

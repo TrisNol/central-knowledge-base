@@ -1,6 +1,6 @@
 ---
 description: 'Angular-specific coding standards and best practices'
-applyTo: '**/*.ts, **/*.html, **/*.scss, **/*.css'
+applyTo: 'frontend/**/*.ts, frontend/**/*.html, frontend/**/*.scss, frontend/**/*.css'
 ---
 
 # Angular Development Instructions

@@ -1,16 +1,22 @@
 import uuid
-
 from contextlib import asynccontextmanager
+
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from starlette.middleware.base import BaseHTTPMiddleware
 
 from src.api import api_router
-from src.core.chat_memory import ChatMemory
-from src.core.auth import MCPOAuthDiscoveryService, OAuthProvider, OAuthService, OAuthSessionStore
-from src.core.session_agent_manager import SessionAgentManager
 from src.config import AppContainer, load_env_config
+from src.core.auth import (
+    MCPOAuthDiscoveryService,
+    OAuthProvider,
+    OAuthService,
+    OAuthSessionStore,
+)
+from src.core.chat_memory import ChatMemory
+from src.core.session_agent_manager import SessionAgentManager
 from src.tools.mcp_oauth_tools import provider_endpoint
+
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):

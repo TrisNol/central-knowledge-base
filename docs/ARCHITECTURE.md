@@ -19,24 +19,24 @@ graph TB
         Confluence[Confluence API]
         GitHub[GitHub API]
     end
-    
+
     subgraph "Backend - Python/FastAPI"
         subgraph "Loaders"
             JL[JiraLoader]
             CL[ConfluenceLoader]
             GL[GitHubLoader]
         end
-        
+
         subgraph "Processing Pipeline"
             DS[DocumentSplitter]
             DE[DocumentEmbedder]
         end
-        
+
         subgraph "Persistence Layer"
             DCW[DocumentChunkWriter]
             RM[RelationshipManager]
         end
-        
+
         subgraph "Agent Selection"
             API[Ask Endpoint]
             SMA[SessionAgentManager]
@@ -64,35 +64,35 @@ graph TB
             SET[LLM/Embedder Factory Utils]
         end
     end
-    
+
     subgraph "Storage"
         Neo4j[(Neo4j Graph DB)]
         Ollama[Ollama LLM]
     end
-    
+
     subgraph "Frontend - Angular"
         UI[Chat UI + Mode Selector]
         Chat[Chat Component]
         Graph[Graph Component]
     end
-    
+
     Jira --> JL
     Confluence --> CL
     GitHub --> GL
-    
+
     JL --> DS
     CL --> DS
     GL --> DS
-    
+
     DS --> DE
     DE --> DCW
     DCW --> Neo4j
-    
+
     JL -.links.-> RM
     CL -.links.-> RM
     GL -.links.-> RM
     RM --> Neo4j
-    
+
     CFG --> DI
     SET --> DI
     UI --> API
@@ -119,12 +119,12 @@ graph TB
     RAG --> Ollama
     MCP --> Ollama
     GS --> Neo4j
-    
+
     UI --> Chat
     UI --> Graph
     Chat --> API
     Graph --> API
-    
+
     style Neo4j fill:#4caf50,stroke:#2e7d32,stroke-width:3px,color:#fff
     style Ollama fill:#ff9800,stroke:#e65100,stroke-width:2px,color:#fff
     style API fill:#2196f3,stroke:#0d47a1,stroke-width:2px,color:#fff
@@ -139,24 +139,24 @@ graph TB
     subgraph "Document Node"
         D["Document<br/>id: jira:PROJ-123<br/>type: JIRA<br/>metadata..."]
     end
-    
+
     subgraph "Chunk Nodes"
         C1["Chunk 0<br/>content: text...<br/>embedding: [...]<br/>chunk_index: 0"]
         C2["Chunk 1<br/>content: text...<br/>embedding: [...]<br/>chunk_index: 1"]
         C3["Chunk N<br/>content: text...<br/>embedding: [...]<br/>chunk_index: N"]
     end
-    
+
     subgraph "Related Documents"
         D2["Document<br/>id: confluence:456"]
         D3["Document<br/>id: jira:PROJ-124"]
     end
-    
+
     C1 -->|PART_OF<br/>chunk_index: 0| D
     C2 -->|PART_OF<br/>chunk_index: 1| D
     C3 -->|PART_OF<br/>chunk_index: N| D
     D -->|REFERENCES| D2
     D -->|REFERENCES| D3
-    
+
     style D fill:#e1f5ff,stroke:#01579b,stroke-width:2px
     style D2 fill:#e1f5ff,stroke:#01579b,stroke-width:2px
     style D3 fill:#e1f5ff,stroke:#01579b,stroke-width:2px
@@ -201,24 +201,24 @@ sequenceDiagram
     participant Writer as DocumentChunkWriter
     participant RelMgr as RelationshipManager
     participant Neo4j as Neo4j Database
-    
+
     API->>Loaders: load()
     Loaders->>Loaders: Extract links metadata
     Loaders-->>API: Documents with links
-    
+
     API->>Splitter: split(documents)
     Splitter-->>API: Chunks
-    
+
     API->>Embedder: embed(chunks)
     Embedder-->>API: Chunks with embeddings
-    
+
     API->>Writer: write(chunks)
     Writer->>Writer: Group by document
     Writer->>Neo4j: CREATE Document nodes
     Writer->>Neo4j: CREATE Chunk nodes
     Writer->>Neo4j: CREATE PART_OF relationships
     Writer-->>API: Success
-    
+
     API->>RelMgr: create_relationships(documents)
     RelMgr->>Neo4j: MATCH Document by id
     RelMgr->>Neo4j: CREATE REFERENCES relationships
@@ -238,7 +238,7 @@ sequenceDiagram
     participant FD as FilterDocs
     participant Neo4j as Neo4j Database
     participant LLM as LLM Generator
-    
+
     User->>API: POST /ask {question, sources}
     API->>Agent: run(messages, documents, allowed_sources)
 
@@ -283,20 +283,20 @@ sequenceDiagram
     participant API as FastAPI
     participant GraphSvc as KnowledgeGraphService
     participant Neo4j as Neo4j Database
-    
+
     User->>Frontend: Navigate to graph view
     Frontend->>API: GET /graph?limit=100
     API->>GraphSvc: fetch_graph(limit)
-    
+
     GraphSvc->>Neo4j: MATCH (d:Document) RETURN d
     Neo4j-->>GraphSvc: Document nodes
-    
+
     GraphSvc->>Neo4j: MATCH (s:Document)-[r:REFERENCES]->(t:Document)
     Neo4j-->>GraphSvc: Relationships + nodes
-    
+
     GraphSvc-->>API: GraphResponse(nodes, edges)
     API-->>Frontend: {nodes: [...], edges: [...]}
-    
+
     Frontend->>Frontend: Render with FFlow
     Frontend-->>User: Interactive graph visualization
 ```

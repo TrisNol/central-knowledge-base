@@ -1,16 +1,23 @@
-from datetime import datetime, timezone
-from typing import Dict, List, Optional, Any
-from pydantic import BaseModel, Field
 from collections import defaultdict
+from datetime import datetime, timezone
 from threading import Lock
+from typing import Any, Dict, List, Optional
+
+from pydantic import BaseModel, Field
 
 
 class ChatHistoryMessage(BaseModel):
     """Represents a single message in the chat history"""
+
     role: str = Field(..., description="Role of the message sender (user or assistant)")
     content: str = Field(..., description="Content of the message")
-    timestamp: datetime = Field(default_factory=lambda: datetime.now(timezone.utc), description="When the message was created")
-    sources: Optional[List[Dict[str, Any]]] = Field(default=None, description="Source documents used for this message")
+    timestamp: datetime = Field(
+        default_factory=lambda: datetime.now(timezone.utc),
+        description="When the message was created",
+    )
+    sources: Optional[List[Dict[str, Any]]] = Field(
+        default=None, description="Source documents used for this message"
+    )
 
 
 class SessionMemory(BaseModel):
@@ -20,6 +27,7 @@ class SessionMemory(BaseModel):
     messages: List[Any] = Field(default_factory=list)
     documents: List[Any] = Field(default_factory=list)
 
+
 class ChatMemory:
     """Thread-safe in-memory storage for chat + agent session state."""
 
@@ -28,10 +36,16 @@ class ChatMemory:
         self._lock = Lock()
         self.max_messages_per_session = max_messages_per_session
 
-    def add_message(self, session_id: str, role: str, content: str, sources: Optional[List[Dict[str, Any]]] = None) -> None:
+    def add_message(
+        self,
+        session_id: str,
+        role: str,
+        content: str,
+        sources: Optional[List[Dict[str, Any]]] = None,
+    ) -> None:
         """
         Add a message to the chat history for a given session.
-        
+
         Args:
             session_id: The session identifier
             role: The role of the sender ('user' or 'assistant')
@@ -44,16 +58,20 @@ class ChatMemory:
 
             # Keep only the last N messages to prevent unlimited growth
             if len(self._memory[session_id].history) > self.max_messages_per_session:
-                self._memory[session_id].history = self._memory[session_id].history[-self.max_messages_per_session:]
+                self._memory[session_id].history = self._memory[session_id].history[
+                    -self.max_messages_per_session :
+                ]
 
-    def get_history(self, session_id: str, limit: Optional[int] = None) -> List[ChatHistoryMessage]:
+    def get_history(
+        self, session_id: str, limit: Optional[int] = None
+    ) -> List[ChatHistoryMessage]:
         """
         Retrieve chat history for a given session.
-        
+
         Args:
             session_id: The session identifier
             limit: Optional limit on number of messages to return (most recent)
-            
+
         Returns:
             List of chat history messages
         """
@@ -85,7 +103,9 @@ class ChatMemory:
                 "documents": session.documents.copy(),
             }
 
-    def set_agent_state(self, session_id: str, messages: List[Any], documents: List[Any]) -> None:
+    def set_agent_state(
+        self, session_id: str, messages: List[Any], documents: List[Any]
+    ) -> None:
         """
         Update state used by the multi-turn agent pipeline.
 
@@ -102,7 +122,7 @@ class ChatMemory:
     def clear_session(self, session_id: str) -> None:
         """
         Clear chat history for a specific session.
-        
+
         Args:
             session_id: The session identifier
         """

@@ -1,63 +1,67 @@
 <div class="knowledge-graph">
-    <div class="knowledge-graph__header">
-        <h2>Knowledge Graph</h2>
-        @if (!isLoading()) {
-        <div class="knowledge-graph__stats">
-            <span class="stat">
-                <strong>{{ totalNodes() }}</strong> nodes
-            </span>
-            <span class="stat">
-                <strong>{{ totalEdges() }}</strong> connections
-            </span>
-            @if (getStatsEntries().length > 0) {
-            <div class="stat-details">
-                @for (stat of getStatsEntries(); track stat.label) {
-                <span class="stat-item">{{ stat.label }}: <strong>{{ stat.count }}</strong></span>
-                }
-            </div>
+  <div class="knowledge-graph__header">
+    <h2>Knowledge Graph</h2>
+    @if (!isLoading()) {
+      <div class="knowledge-graph__stats">
+        <span class="stat">
+          <strong>{{ totalNodes() }}</strong> nodes
+        </span>
+        <span class="stat">
+          <strong>{{ totalEdges() }}</strong> connections
+        </span>
+        @if (getStatsEntries().length > 0) {
+          <div class="stat-details">
+            @for (stat of getStatsEntries(); track stat.label) {
+              <span class="stat-item"
+                >{{ stat.label }}: <strong>{{ stat.count }}</strong></span
+              >
             }
-        </div>
+          </div>
         }
-    </div>
-
-    @if (isLoading()) {
-    <div class="knowledge-graph__loading">
-        <p>Loading knowledge graph...</p>
-    </div>
-    } @else if (nodes().length === 0) {
-    <div class="knowledge-graph__empty">
-        <p>No nodes found. Please index some documents first.</p>
-    </div>
-    } @else {
-    <f-flow fDraggable>
-        <f-background>
-            <f-circle-pattern [color]="'#555555'"></f-circle-pattern>
-        </f-background>
-        <f-canvas>
-            @for (edge of edges(); track edge.source + edge.target) {
-            <f-connection 
-                [fOutputId]="edge.source" 
-                [fInputId]="edge.target"
-                fConnectionBehavior="bezier"></f-connection>
-            }
-
-            @for (node of nodes(); track node.id; let i = $index) {
-            <app-knowledge-graph-node 
-                fNode 
-                fDragHandle 
-                fNodeOutput 
-                fNodeInput
-                [fNodePosition]="getNodePosition(i)" 
-                [fOutputId]="node.id"
-                [fInputId]="node.id"
-                fOutputConnectableSide="right"
-                fInputConnectableSide="left"
-                [title]="node.title"
-                [url]="node.url"
-                [iconUrl]="node.iconUrl">
-            </app-knowledge-graph-node>
-            }
-        </f-canvas>
-    </f-flow>
+      </div>
     }
+  </div>
+
+  @if (isLoading()) {
+    <div class="knowledge-graph__loading">
+      <p>Loading knowledge graph...</p>
+    </div>
+  } @else if (nodes().length === 0) {
+    <div class="knowledge-graph__empty">
+      <p>No nodes found. Please index some documents first.</p>
+    </div>
+  } @else {
+    <f-flow fDraggable>
+      <f-background>
+        <f-circle-pattern [color]="'#555555'"></f-circle-pattern>
+      </f-background>
+      <f-canvas>
+        @for (edge of edges(); track edge.source + edge.target) {
+          <f-connection
+            [fOutputId]="edge.source"
+            [fInputId]="edge.target"
+            fConnectionBehavior="bezier"
+          ></f-connection>
+        }
+
+        @for (node of nodes(); track node.id; let i = $index) {
+          <app-knowledge-graph-node
+            fNode
+            fDragHandle
+            fNodeOutput
+            fNodeInput
+            [fNodePosition]="getNodePosition(i)"
+            [fOutputId]="node.id"
+            [fInputId]="node.id"
+            fOutputConnectableSide="right"
+            fInputConnectableSide="left"
+            [title]="node.title"
+            [url]="node.url"
+            [iconUrl]="node.iconUrl"
+          >
+          </app-knowledge-graph-node>
+        }
+      </f-canvas>
+    </f-flow>
+  }
 </div>

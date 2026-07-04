@@ -9,7 +9,10 @@ from urllib.parse import urlencode
 
 import httpx
 
-from src.config import build_fallback_access_tokens_from_env, build_preconfigured_clients_from_env
+from src.config import (
+    build_fallback_access_tokens_from_env,
+    build_preconfigured_clients_from_env,
+)
 from src.core.auth.mcp_discovery import MCPOAuthDiscoveryService
 from src.core.auth.models import (
     OAuthClientRegistration,
@@ -47,7 +50,8 @@ class OAuthService:
         backend_base_url: str,
         provider_scopes: dict[OAuthProvider, str],
         fallback_access_tokens: dict[OAuthProvider, str],
-        preconfigured_clients: dict[OAuthProvider, OAuthClientRegistration] | None = None,
+        preconfigured_clients: dict[OAuthProvider, OAuthClientRegistration]
+        | None = None,
     ):
         self._store = session_store
         self._discovery = discovery_service
@@ -64,10 +68,14 @@ class OAuthService:
         """Get all fallback access tokens."""
         return dict(self._fallback_access_tokens)
 
-    def has_session_access_token(self, session_id: str, provider: OAuthProvider) -> bool:
+    def has_session_access_token(
+        self, session_id: str, provider: OAuthProvider
+    ) -> bool:
         return self._store.get_token(session_id, provider) is not None
 
-    async def start_connect(self, session_id: str, provider: OAuthProvider, redirect_uri: str) -> str:
+    async def start_connect(
+        self, session_id: str, provider: OAuthProvider, redirect_uri: str
+    ) -> str:
         metadata = await self._discovery.discover(provider)
 
         client = await self._resolve_client_registration(
@@ -87,9 +95,13 @@ class OAuthService:
         )
         self._store.save_pending(session_id, pending)
 
-        auth_endpoint = metadata.authorization_server_metadata.get("authorization_endpoint")
+        auth_endpoint = metadata.authorization_server_metadata.get(
+            "authorization_endpoint"
+        )
         if not auth_endpoint:
-            raise OAuthFlowError("Authorization server metadata missing authorization_endpoint.")
+            raise OAuthFlowError(
+                "Authorization server metadata missing authorization_endpoint."
+            )
 
         query_params = {
             "response_type": "code",
@@ -129,7 +141,9 @@ class OAuthService:
         metadata = await self._discovery.discover(provider)
         token_endpoint = metadata.authorization_server_metadata.get("token_endpoint")
         if not token_endpoint:
-            raise OAuthFlowError("Authorization server metadata missing token_endpoint.")
+            raise OAuthFlowError(
+                "Authorization server metadata missing token_endpoint."
+            )
 
         client = await self._resolve_client_registration(
             session_id=session_id,
@@ -149,7 +163,10 @@ class OAuthService:
             data["resource"] = metadata.resource
 
         headers = {"Accept": "application/json"}
-        if client.client_secret and client.token_endpoint_auth_method == "client_secret_basic":
+        if (
+            client.client_secret
+            and client.token_endpoint_auth_method == "client_secret_basic"
+        ):
             basic_value = base64.b64encode(
                 f"{client.client_id}:{client.client_secret}".encode("utf-8")
             ).decode("ascii")
@@ -210,7 +227,9 @@ class OAuthService:
                 status.connection_type = "none"
         return statuses
 
-    async def get_valid_access_token(self, session_id: str, provider: OAuthProvider) -> str | None:
+    async def get_valid_access_token(
+        self, session_id: str, provider: OAuthProvider
+    ) -> str | None:
         token = self._store.get_token(session_id, provider)
         if not token:
             return None
@@ -325,7 +344,9 @@ class OAuthService:
                     dcr_endpoint,
                 )
                 if registration:
-                    self._store.save_client_registration(session_id, provider, registration)
+                    self._store.save_client_registration(
+                        session_id, provider, registration
+                    )
                     return registration
 
             raise OAuthFlowError(
@@ -389,7 +410,10 @@ class OAuthService:
     def _is_expiring(token: OAuthTokenState, skew_seconds: int = 90) -> bool:
         if not token.expires_at:
             return False
-        return datetime.now(timezone.utc) + timedelta(seconds=skew_seconds) >= token.expires_at
+        return (
+            datetime.now(timezone.utc) + timedelta(seconds=skew_seconds)
+            >= token.expires_at
+        )
 
     def callback_redirect_url(self, provider: OAuthProvider, status: str) -> str:
         params = urlencode({"provider": provider.value, "status": status})
@@ -429,7 +453,9 @@ class OAuthService:
         return build_fallback_access_tokens_from_env()
 
     @staticmethod
-    def build_preconfigured_clients_from_env() -> dict[OAuthProvider, OAuthClientRegistration]:
+    def build_preconfigured_clients_from_env() -> dict[
+        OAuthProvider, OAuthClientRegistration
+    ]:
         return build_preconfigured_clients_from_env()
 
     @staticmethod
@@ -451,4 +477,6 @@ class OAuthService:
                 "but no registration endpoint was discovered."
             )
 
-        return "No dynamic registration available and no pre-registered client configured."
+        return (
+            "No dynamic registration available and no pre-registered client configured."
+        )

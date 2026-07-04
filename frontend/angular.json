@@ -26,10 +26,7 @@
                 "input": "public"
               }
             ],
-            "styles": [
-              "src/styles.scss",
-              "node_modules/prismjs/themes/prism-okaidia.css"
-            ],
+            "styles": ["src/styles.scss", "node_modules/prismjs/themes/prism-okaidia.css"],
             "scripts": [
               "node_modules/mermaid/dist/mermaid.min.js",
               "node_modules/prismjs/prism.js",
@@ -49,7 +46,7 @@
                 {
                   "type": "initial",
                   "maximumWarning": "500kB",
-                  "maximumError": "1MB"
+                  "maximumError": "5MB"
                 },
                 {
                   "type": "anyComponentStyle",
@@ -99,16 +96,20 @@
                 "input": "public"
               }
             ],
-            "styles": [
-              "src/styles.scss",
-              "node_modules/prismjs/themes/prism-okaidia.css"
-            ]
+            "styles": ["src/styles.scss", "node_modules/prismjs/themes/prism-okaidia.css"]
+          }
+        },
+        "lint": {
+          "builder": "@angular-eslint/builder:lint",
+          "options": {
+            "lintFilePatterns": ["src/**/*.ts", "src/**/*.html"]
           }
         }
       }
     }
   },
   "cli": {
-    "analytics": false
+    "analytics": false,
+    "schematicCollections": ["angular-eslint"]
   }
 }

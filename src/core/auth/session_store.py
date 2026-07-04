@@ -52,7 +52,9 @@ class OAuthSessionStore:
             session = self._ensure_session(session_id)
             session.tokens[token.provider] = token
 
-    def get_token(self, session_id: str, provider: OAuthProvider) -> OAuthTokenState | None:
+    def get_token(
+        self, session_id: str, provider: OAuthProvider
+    ) -> OAuthTokenState | None:
         with self._lock:
             session = self._sessions.get(session_id)
             if not session:

@@ -1,11 +1,12 @@
-from haystack.components.agents import Agent
 from typing import List
 
+from haystack.components.agents import Agent
 from haystack.components.agents.state import replace_values
 
 
 class MCPAgent(Agent):
     """Agent that uses MCP (Model Context Protocol) tools to access external services."""
+
     __system_prompt__ = """
         You are Project Kraken, an AI assistant built on top of a central knowledge base containing information about an enterprise's documentation, processes, and data.
 
@@ -45,6 +46,7 @@ class MCPAgent(Agent):
 
 class RAGAgent(Agent):
     """Agent that uses RAG (Retrieval-Augmented Generation) from the knowledge graph."""
+
     __system_prompt__ = """
         You are Project Kraken, an AI assistant built on top of a central knowledge base containing information about an enterprise's documentation, processes, and data.
 
@@ -84,4 +86,3 @@ class RAGAgent(Agent):
 
 # Backwards compatibility alias
 SoftwareDeveloperAgent = MCPAgent
-

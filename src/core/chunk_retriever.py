@@ -1,7 +1,8 @@
 """Custom retriever for querying Chunk nodes and returning Document context."""
 
-from typing import List, Dict, Any, Optional
-from haystack import component, Document, default_from_dict, default_to_dict
+from typing import Any, Dict, List, Optional
+
+from haystack import Document, component, default_from_dict, default_to_dict
 from neo4j import GraphDatabase
 
 

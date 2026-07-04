@@ -18,6 +18,7 @@ from src.tools.utils import _docs_to_summary
 
 if TYPE_CHECKING:
     from haystack.components.agents import Agent
+
     from src.tools.fetch_neighbors_tool import FetchNeighbors
     from src.tools.graph_query_tool import GraphQuery
     from src.tools.rag_search_tool import RAGSearch
@@ -61,9 +62,7 @@ class SessionAgentManager:
         if chat_mode == ChatMode.RAG:
             return self._get_or_create_rag_agent(session_id)
         else:
-            return await self._get_or_create_mcp_agent(
-                session_id, mcp_auth_type
-            )
+            return await self._get_or_create_mcp_agent(session_id, mcp_auth_type)
 
     def _get_or_create_rag_agent(self, session_id: str) -> RAGAgent:
         """Create a RAG agent using the knowledge graph search tool."""
@@ -242,4 +241,3 @@ class SessionAgentManager:
             except Exception:
                 # Ignore close errors during cleanup.
                 pass
-

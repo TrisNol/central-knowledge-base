@@ -8,12 +8,15 @@
                 "ms-python.python",
                 "ms-python.isort",
                 "ms-python.vscode-pylance",
-                "ms-python.black-formatter",
                 "njpwerner.autodocstring",
                 "bierner.markdown-mermaid",
                 "github.copilot-chat",
                 "ms-azuretools.vscode-docker",
-                "tamasfe.even-better-toml"
+                "tamasfe.even-better-toml",
+                "redhat.vscode-yaml",
+                "charliermarsh.ruff",
+                "esbenp.prettier-vscode",
+                "dbaeumer.vscode-eslint"
             ]
         }
     },
@@ -23,7 +26,9 @@
         "source=${localWorkspaceFolderBasename}-node_modules,target=${containerWorkspaceFolder}/frontend/node_modules,type=volume"
     ],
     "features": {
-        "ghcr.io/devcontainers/features/docker-outside-of-docker:1": {}
+        "ghcr.io/devcontainers/features/docker-outside-of-docker:1": {},
+        "ghcr.io/devcontainers/features/github-cli:1": {},
+        "ghcr.io/devcontainers/features/copilot-cli:1": {}
     },
     "runArgs": [
         "--network=host",

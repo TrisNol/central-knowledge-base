@@ -91,7 +91,9 @@ class MCPOAuthDiscoveryService:
         www_authenticate: str | None,
     ) -> dict[str, Any]:
         resource_metadata_url = self._extract_resource_metadata_url(www_authenticate)
-        candidate_urls = self._resource_metadata_candidates(mcp_url, resource_metadata_url)
+        candidate_urls = self._resource_metadata_candidates(
+            mcp_url, resource_metadata_url
+        )
 
         for url in candidate_urls:
             if not url:
@@ -114,9 +116,11 @@ class MCPOAuthDiscoveryService:
 
         # Some MCP servers (including Atlassian) may not expose protected-resource metadata,
         # but still expose OAuth authorization server metadata at the MCP origin.
-        origin_authorization_server = await self._discover_authorization_server_from_mcp_origin(
-            client,
-            mcp_url,
+        origin_authorization_server = (
+            await self._discover_authorization_server_from_mcp_origin(
+                client,
+                mcp_url,
+            )
         )
         if origin_authorization_server:
             return {
@@ -202,7 +206,10 @@ class MCPOAuthDiscoveryService:
             response = await client.get(url)
             if response.status_code == 200:
                 metadata = response.json()
-                if "authorization_endpoint" in metadata and "token_endpoint" in metadata:
+                if (
+                    "authorization_endpoint" in metadata
+                    and "token_endpoint" in metadata
+                ):
                     return metadata
 
         raise OAuthDiscoveryError("Unable to resolve authorization server metadata.")
@@ -270,7 +277,10 @@ class MCPOAuthDiscoveryService:
         if not mcp_host or not metadata_host:
             raise OAuthDiscoveryError("Could not validate resource metadata host.")
 
-        if mcp_host != metadata_host and metadata_host not in {"localhost", "127.0.0.1"}:
+        if mcp_host != metadata_host and metadata_host not in {
+            "localhost",
+            "127.0.0.1",
+        }:
             raise OAuthDiscoveryError(
                 "resource_metadata host does not match the MCP endpoint host."
             )
@@ -285,7 +295,9 @@ class MCPOAuthDiscoveryService:
                 return None
             return entry.value
 
-    def _set_cached(self, provider: OAuthProvider, value: ProviderDiscoveryMetadata) -> None:
+    def _set_cached(
+        self, provider: OAuthProvider, value: ProviderDiscoveryMetadata
+    ) -> None:
         with self._lock:
             self._cache[provider] = _CacheEntry(
                 value=value,

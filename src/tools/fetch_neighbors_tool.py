@@ -87,9 +87,7 @@ class FetchNeighbors:
                         if chunks
                         else metadata.get("title", "")
                     )
-                    neighbor_docs.append(
-                        Document(content=content, meta=metadata)
-                    )
+                    neighbor_docs.append(Document(content=content, meta=metadata))
 
             return {"documents": documents + neighbor_docs}
         finally:

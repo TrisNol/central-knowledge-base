@@ -4,7 +4,7 @@
 
 Project Kraken is a **Central Knowledge Base** designed to bring together multiple sources of information:
 
-- GitHub 
+- GitHub
 - Confluence
 - Jira
 
@@ -43,7 +43,7 @@ graph LR
         C[📄 Confluence]
         G[🔧 GitHub]
     end
-    
+
     subgraph "Project Kraken"
         KB[🦑 Central Knowledge Base]
         UI[🖱️ Chat Mode Selector]
@@ -61,17 +61,17 @@ graph LR
         end
         Graph[🕸️ Knowledge Graph]
     end
-    
+
     subgraph "Features"
         Search[🔍 Unified Search]
         QA[💬 Question Answering]
         Viz[📊 Graph Visualization]
     end
-    
+
     J --> KB
     C --> KB
     G --> KB
-    
+
     UI --> API
     API --> SMA
     SMA --> RAG
@@ -85,7 +85,7 @@ graph LR
     T2 --> Graph
     T3 --> Graph
     KB --> Graph
-    
+
     RAG --> Search
     MCP --> QA
     Graph --> Viz
@@ -104,7 +104,7 @@ sequenceDiagram
     participant Neo4j as Neo4j
     participant OAuth as OAuth Service
     participant LLM as LLM (Ollama/OpenAI/Azure OpenAI)
-    
+
     User->>UI: Ask question, choose mode, select sources
     UI->>API: POST /ask { question, sources, chat_mode, mcp_auth_type }
     API->>SMA: get_or_create_agent(session_id, chat_mode, mcp_auth_type)
@@ -170,7 +170,7 @@ Project Kraken implements intelligent chat history management to provide a seaml
 
 ### Key Features
 
-**Session Tracking**: 
+**Session Tracking**:
 
 - Automatic session ID generation and cookie-based persistence
 - 30-day session lifetime

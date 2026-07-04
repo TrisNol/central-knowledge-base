@@ -7,13 +7,9 @@ import { SidebarComponent } from '../sidebar/sidebar.component';
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [
-    RouterOutlet,
-    ButtonModule,
-    SidebarComponent,
-  ],
+  imports: [RouterOutlet, ButtonModule, SidebarComponent],
   templateUrl: './app.html',
-  styleUrl: './app.scss'
+  styleUrl: './app.scss',
 })
 export class App {
   protected readonly title = signal('frontend');

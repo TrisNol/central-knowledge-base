@@ -22,8 +22,13 @@ router = APIRouter(tags=["chat"])
 class AskRequest(BaseModel):
     question: str
     sources: list[str] = Field(default_factory=list)
-    chat_mode: ChatMode = Field(default=ChatMode.MCP, description="Chat mode: 'rag' or 'mcp'")
-    mcp_auth_type: MCPAuthType = Field(default=MCPAuthType.OAUTH, description="MCP authentication type: 'oauth' or 'service_credentials'") 
+    chat_mode: ChatMode = Field(
+        default=ChatMode.MCP, description="Chat mode: 'rag' or 'mcp'"
+    )
+    mcp_auth_type: MCPAuthType = Field(
+        default=MCPAuthType.OAUTH,
+        description="MCP authentication type: 'oauth' or 'service_credentials'",
+    )
 
 
 def _normalize_requested_sources(sources: list[str] | None) -> list[str]:
@@ -87,7 +92,9 @@ async def answer_question(body: AskRequest, request: Request) -> ResponseModel:
             if str(doc.meta.get("type", "")).upper() in allowed_sources
         ]
 
-    session_messages = session_state["messages"] + [ChatMessage.from_user(body.question)]
+    session_messages = session_state["messages"] + [
+        ChatMessage.from_user(body.question)
+    ]
 
     agent = await agent_manager.get_or_create_agent(
         session_id,

@@ -1,10 +1,10 @@
 from typing import List
+
 from haystack import Document, Pipeline, component
 
 
 @component
 class RAGSearch:
-
     def __init__(self, embedding_retriever, text_embedder):
         pipeline = Pipeline()
 

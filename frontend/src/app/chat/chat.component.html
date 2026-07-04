@@ -1,127 +1,158 @@
 <div class="chat">
-    <div class="chat__header">
-        <h2>Chat</h2>
-        <div class="header-actions">
-            <div class="auth-controls" role="group" aria-label="Provider connections">
-                <button
-                    type="button"
-                    class="provider-btn"
-                    [class.provider-btn--connected]="providerStatus().github"
-                    (click)="shouldDisconnect('github') ? disconnectProvider('github') : connectProvider('github')">
-                    GitHub
-                </button>
-                <button
-                    type="button"
-                    class="provider-btn"
-                    [class.provider-btn--connected]="providerStatus().atlassian"
-                    (click)="shouldDisconnect('atlassian') ? disconnectProvider('atlassian') : connectProvider('atlassian')">
-                    Atlassian
-                </button>
-            </div>
-
-            @if (messages().length > 0) {
-            <button type="button" class="clear-btn" (click)="clearHistory()" title="Clear chat history">
-                <i class="pi pi-trash" aria-hidden="true"></i>
-                <span class="visually-hidden">Clear chat history</span>
-            </button>
-            }
-        </div>
-    </div>
-
-    <div class="chat__messages" aria-live="polite">
-        @for (msg of messages(); track msg.id) {
-        <div class="bubble" [class.bubble--user]="msg.role === 'user'"
-            [class.bubble--assistant]="msg.role === 'assistant'">
-            <div class="bubble__content">
-                @if (msg.role === 'assistant') {
-                <markdown mermaid [data]="msg.content"></markdown>
-                } @else {
-                {{ msg.content }}
-                }
-            </div>
-
-            @if (msg.refs?.length) {
-            <div class="refs" role="list" aria-label="References used">
-                @for (ref of msg.refs; track ref.url) {
-                <a role="listitem" class="ref" [href]="ref.url" target="_blank" rel="noopener noreferrer">
-                    <img class="ref__icon" src="{{ ref.iconUrl }}" alt="" aria-hidden="true" />
-                    <span class="ref__text">{{ ref.title }}</span>
-                </a>
-                }
-            </div>
-            }
-        </div>
-        }
-
-        @if (isThinking()) {
-        <div class="bubble bubble--assistant">
-            <div class="typing" aria-label="Assistant is typing">
-                <span></span><span></span><span></span>
-            </div>
-        </div>
-        }
-    </div>
-
-    <form class="chat__input" (submit)="send(); $event.preventDefault()" autocomplete="off">
-        <input name="prompt" [ngModel]="input()" (ngModelChange)="input.set($event)" type="text"
-            placeholder="Ask anything…" [disabled]="isThinking()" aria-label="Enter your prompt" />
-        <button #settingsBtn type="button" class="settings-btn" (click)="popover.toggle($event)" aria-haspopup="dialog">
-            <i class="pi pi-cog" aria-hidden="true"></i>
-            <span class="visually-hidden">Settings</span>
+  <div class="chat__header">
+    <h2>Chat</h2>
+    <div class="header-actions">
+      <div class="auth-controls" role="group" aria-label="Provider connections">
+        <button
+          type="button"
+          class="provider-btn"
+          [class.provider-btn--connected]="providerStatus().github"
+          (click)="
+            shouldDisconnect('github') ? disconnectProvider('github') : connectProvider('github')
+          "
+        >
+          GitHub
         </button>
-        <p-popover #popover [dismissable]="true" appendTo="body">
-            <div class="chat__settings" role="region" aria-label="Chat settings">
-                <!-- Chat Mode Selection -->
-                <div class="setting-group">
-                    <label for="chatMode">Chat Mode</label>
-                    <p-select 
-                        id="chatMode"
-                        [options]="chatModeOptions" 
-                        [ngModel]="chatMode()"
-                        (ngModelChange)="chatMode.set($event)"
-                        [ngModelOptions]="{standalone: true}"
-                        optionLabel="label" 
-                        optionValue="value"
-                        placeholder="Select chat mode"
-                        >
-                    </p-select>
-                </div>
+        <button
+          type="button"
+          class="provider-btn"
+          [class.provider-btn--connected]="providerStatus().atlassian"
+          (click)="
+            shouldDisconnect('atlassian')
+              ? disconnectProvider('atlassian')
+              : connectProvider('atlassian')
+          "
+        >
+          Atlassian
+        </button>
+      </div>
 
-                <!-- MCP Auth Type (only shown when MCP mode is selected) -->
-                @if (chatMode() === 'mcp') {
-                <div class="setting-group">
-                    <label for="mcpAuthType">MCP Authentication</label>
-                    <p-select 
-                        id="mcpAuthType"
-                        [options]="mcpAuthTypeOptions" 
-                        [ngModel]="mcpAuthType()"
-                        (ngModelChange)="mcpAuthType.set($event)"
-                        [ngModelOptions]="{standalone: true}"
-                        optionLabel="label" 
-                        optionValue="value"
-                        placeholder="Select auth type"
-                        >
-                    </p-select>
-                </div>
-                }
+      @if (messages().length > 0) {
+        <button type="button" class="clear-btn" (click)="clearHistory()" title="Clear chat history">
+          <i class="pi pi-trash" aria-hidden="true"></i>
+          <span class="visually-hidden">Clear chat history</span>
+        </button>
+      }
+    </div>
+  </div>
 
-                <!-- Sources Selection -->
-                <div class="setting-group">
-                    <label for="sources">Knowledge Sources</label>
-                    <p-multiSelect 
-                        id="sources"
-                        [options]="sourceOptions" 
-                        [(ngModel)]="selectedSources" 
-                        name="sources"
-                        [ngModelOptions]="{standalone: true}" 
-                        optionLabel="label" 
-                        optionValue="value"
-                        placeholder="Select sources">
-                    </p-multiSelect>
-                </div>
-            </div>
-        </p-popover>
+  <div class="chat__messages" aria-live="polite">
+    @for (msg of messages(); track msg.id) {
+      <div
+        class="bubble"
+        [class.bubble--user]="msg.role === 'user'"
+        [class.bubble--assistant]="msg.role === 'assistant'"
+      >
+        <div class="bubble__content">
+          @if (msg.role === 'assistant') {
+            <markdown mermaid [data]="msg.content"></markdown>
+          } @else {
+            {{ msg.content }}
+          }
+        </div>
 
-        <button type="submit" [disabled]="!input().trim() || isThinking()">Send</button>
-    </form>
+        @if (msg.refs?.length) {
+          <div class="refs" role="list" aria-label="References used">
+            @for (ref of msg.refs; track ref.url) {
+              <a
+                role="listitem"
+                class="ref"
+                [href]="ref.url"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                <img class="ref__icon" src="{{ ref.iconUrl }}" alt="" aria-hidden="true" />
+                <span class="ref__text">{{ ref.title }}</span>
+              </a>
+            }
+          </div>
+        }
+      </div>
+    }
+
+    @if (isThinking()) {
+      <div class="bubble bubble--assistant">
+        <div class="typing" aria-label="Assistant is typing">
+          <span></span><span></span><span></span>
+        </div>
+      </div>
+    }
+  </div>
+
+  <form class="chat__input" (submit)="send(); $event.preventDefault()" autocomplete="off">
+    <input
+      name="prompt"
+      [ngModel]="input()"
+      (ngModelChange)="input.set($event)"
+      type="text"
+      placeholder="Ask anything…"
+      [disabled]="isThinking()"
+      aria-label="Enter your prompt"
+    />
+    <button
+      #settingsBtn
+      type="button"
+      class="settings-btn"
+      (click)="popover.toggle($event)"
+      aria-haspopup="dialog"
+    >
+      <i class="pi pi-cog" aria-hidden="true"></i>
+      <span class="visually-hidden">Settings</span>
+    </button>
+    <p-popover #popover [dismissable]="true" appendTo="body">
+      <div class="chat__settings" role="region" aria-label="Chat settings">
+        <!-- Chat Mode Selection -->
+        <div class="setting-group">
+          <label for="chatMode">Chat Mode</label>
+          <p-select
+            id="chatMode"
+            [options]="chatModeOptions"
+            [ngModel]="chatMode()"
+            (ngModelChange)="chatMode.set($event)"
+            [ngModelOptions]="{ standalone: true }"
+            optionLabel="label"
+            optionValue="value"
+            placeholder="Select chat mode"
+          >
+          </p-select>
+        </div>
+
+        <!-- MCP Auth Type (only shown when MCP mode is selected) -->
+        @if (chatMode() === 'mcp') {
+          <div class="setting-group">
+            <label for="mcpAuthType">MCP Authentication</label>
+            <p-select
+              id="mcpAuthType"
+              [options]="mcpAuthTypeOptions"
+              [ngModel]="mcpAuthType()"
+              (ngModelChange)="mcpAuthType.set($event)"
+              [ngModelOptions]="{ standalone: true }"
+              optionLabel="label"
+              optionValue="value"
+              placeholder="Select auth type"
+            >
+            </p-select>
+          </div>
+        }
+
+        <!-- Sources Selection -->
+        <div class="setting-group">
+          <label for="sources">Knowledge Sources</label>
+          <p-multiSelect
+            id="sources"
+            [options]="sourceOptions"
+            [(ngModel)]="selectedSources"
+            name="sources"
+            [ngModelOptions]="{ standalone: true }"
+            optionLabel="label"
+            optionValue="value"
+            placeholder="Select sources"
+          >
+          </p-multiSelect>
+        </div>
+      </div>
+    </p-popover>
+
+    <button type="submit" [disabled]="!input().trim() || isThinking()">Send</button>
+  </form>
 </div>
