@@ -14,6 +14,7 @@ from src.common.models import (
     MCPAuthType,
     ResponseModel,
 )
+from src.tools.mcp_result_parser import extract_mcp_documents
 
 logger = logging.getLogger(__name__)
 router = APIRouter(tags=["chat"])
@@ -54,15 +55,41 @@ def _normalize_requested_sources(sources: list[str] | None) -> list[str]:
     return normalized
 
 
-def _map_metadata(meta: dict) -> BaseMetadata:
+def _map_metadata(meta: dict) -> BaseMetadata | None:
+    """Map raw document metadata to a typed model.
+
+    MCP-registered sources carry only title/source/type, so missing required
+    fields are filled with empty-string defaults. Fully-populated documents
+    from the knowledge graph supply all fields via ``meta`` and override them.
+    """
     doc_type = meta.get("type")
     if doc_type == "JIRA":
-        return JiraMetadata(**meta)
+        defaults: dict = {
+            "last_updated": "",
+            "issue_key": "",
+            "project_key": "",
+            "title": "",
+        }
+        return JiraMetadata(**{**defaults, **meta})
     if doc_type == "CONFLUENCE":
-        return ConfluenceMetadata(**meta)
+        defaults = {
+            "last_updated": "",
+            "page_id": "",
+            "space_key": "",
+            "title": "",
+        }
+        return ConfluenceMetadata(**{**defaults, **meta})
     if doc_type == "GITHUB":
-        return GitHubMetadata(**meta)
-    raise ValueError(f"Unknown document type: {doc_type}")
+        defaults = {
+            "last_updated": "",
+            "repo_name": "",
+            "file_path": "",
+            "commit_hash": "",
+            "ref": "",
+        }
+        return GitHubMetadata(**{**defaults, **meta})
+    logger.warning("Skipping document with unrecognised type '%s'", doc_type)
+    return None
 
 
 @router.post("/ask", response_model=ResponseModel)
@@ -92,6 +119,14 @@ async def answer_question(body: AskRequest, request: Request) -> ResponseModel:
             if str(doc.meta.get("type", "")).upper() in allowed_sources
         ]
 
+    # Record which sources already existed before this turn so we can
+    # distinguish them from sources acquired during the current turn.
+    pre_turn_sources: set[str] = {
+        doc.meta.get("source", "")
+        for doc in session_documents
+        if doc.meta.get("source")
+    }
+
     session_messages = session_state["messages"] + [
         ChatMessage.from_user(body.question)
     ]
@@ -109,6 +144,17 @@ async def answer_question(body: AskRequest, request: Request) -> ResponseModel:
     )
 
     result_documents = result.get("documents", [])
+
+    # Automatically extract documents from MCP tool result messages so sources
+    # are captured even when the LLM did not call register_mcp_sources_tool.
+    if body.chat_mode == ChatMode.MCP:
+        parsed_docs = extract_mcp_documents(result.get("messages", []))
+        existing_sources = {doc.meta.get("source", "") for doc in result_documents}
+        for doc in parsed_docs:
+            if doc.meta.get("source", "") not in existing_sources:
+                result_documents.append(doc)
+                existing_sources.add(doc.meta.get("source", ""))
+
     if allowed_sources:
         result_documents = [
             doc
@@ -116,7 +162,18 @@ async def answer_question(body: AskRequest, request: Request) -> ResponseModel:
             if str(doc.meta.get("type", "")).upper() in allowed_sources
         ]
 
-    sources_dict = [_map_metadata(doc.meta).model_dump() for doc in result_documents]
+    # Only surface sources that were newly acquired this turn.
+    current_turn_documents = [
+        doc
+        for doc in result_documents
+        if doc.meta.get("source", "") not in pre_turn_sources
+    ]
+
+    sources_dict = [
+        mapped.model_dump()
+        for doc in current_turn_documents
+        if (mapped := _map_metadata(doc.meta)) is not None
+    ]
 
     chat_memory.add_message(
         session_id,

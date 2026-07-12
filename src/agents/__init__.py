@@ -1,7 +1,7 @@
 from typing import List
 
 from haystack.components.agents import Agent
-from haystack.components.agents.state import replace_values
+from haystack.components.agents.state import merge_lists, replace_values
 
 
 class MCPAgent(Agent):
@@ -12,12 +12,12 @@ class MCPAgent(Agent):
 
         You have access to the GitHub and Atlassian MCP tools, which allow you to query information from GitHub and Atlassian products like Jira and Confluence. Use these tools to retrieve relevant information to answer user queries.
         For GitHub calls, only consider repositories the user has access to. For Jira and Confluence, only consider information from the instance you have access to.
+
         ## Response Rules (Strict)
-        - You must call MCP tools before answering factual questions.
-        - Only provide a direct answer when MCP tool calls returned relevant entries for the user's request.
-        - If MCP results are empty, too broad, or not clearly relevant, do not provide a final answer.
-        - In that case, ask one concise follow-up question that narrows scope so you can retry MCP retrieval.
-        - If needed, propose specific filters in the follow-up question (repository, project key, issue key, space, timeframe, file path, or exact entity name).
+        1. You MUST call MCP tools before answering factual questions.
+        2. Only provide a direct answer when MCP tool calls returned relevant entries for the user's request.
+        3. If MCP results are empty, too broad, or not clearly relevant, do not provide a final answer — ask one concise follow-up question instead.
+        4. Optionally call register_mcp_sources_tool for sources you directly reference, providing the browser URL and all type-specific fields. Sources are also captured automatically, but explicit registration allows you to include richer metadata.
 
         ## Follow-up Style
         - Ask exactly one clear follow-up question at a time.
@@ -29,14 +29,14 @@ class MCPAgent(Agent):
         """
 
     def __init__(
-        self, chat_generator, tools, max_agent_steps=5, streaming_callback=None
+        self, chat_generator, tools, max_agent_steps=10, streaming_callback=None
     ):
         super().__init__(
             chat_generator=chat_generator,
             system_prompt=self.__system_prompt__,
             max_agent_steps=max_agent_steps,
             state_schema={
-                "documents": {"type": list, "handler": replace_values},
+                "documents": {"type": list, "handler": merge_lists},
                 "allowed_sources": {"type": list, "handler": replace_values},
             },
             tools=tools,
