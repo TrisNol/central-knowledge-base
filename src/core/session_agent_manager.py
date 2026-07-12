@@ -12,9 +12,10 @@ from src.agents import MCPAgent, RAGAgent
 from src.common.models import ChatMode, MCPAuthType
 from src.core.auth.models import OAuthProvider
 from src.core.auth.oauth_service import OAuthService
+from src.tools.extract_sources_tool import RegisterMCPSources
 from src.tools.filter_docs_tool import FilterDocs
 from src.tools.mcp_oauth_tools import create_oauth_mcp_toolset
-from src.tools.utils import _docs_to_summary
+from src.tools.utils import _docs_to_summary, _mcp_source_registered_summary
 
 if TYPE_CHECKING:
     from haystack.components.agents import Agent
@@ -184,9 +185,44 @@ class SessionAgentManager:
             for provider, token in provider_tokens
         ]
 
+        register_sources_tool = ComponentTool(
+            component=RegisterMCPSources(),
+            name="register_mcp_sources_tool",
+            description=(
+                "Register a source retrieved from an MCP tool as a tracked document so it can be "
+                "surfaced to the user as a reference. Call once per relevant source BEFORE giving "
+                "your final answer. Always populate the type-specific fields from the MCP response data.\n"
+                "Common fields (all types):\n"
+                "  'title'        — human-readable name (issue summary, page title, file name)\n"
+                "  'url'          — browser-accessible URL, NOT the REST API endpoint\n"
+                "                   Jira:       https://<instance>/browse/<ISSUE-KEY>\n"
+                "                   Confluence: https://<instance>/wiki/spaces/<SPACE>/pages/<PAGE_ID>\n"
+                "                   GitHub:     https://github.com/<owner>/<repo>/blob/<ref>/<path>\n"
+                "  'content'      — brief excerpt of the relevant content\n"
+                "  'source_type'  — MUST be exactly one of: JIRA, CONFLUENCE, GITHUB\n"
+                "  'last_updated' — last-modified timestamp from the MCP response\n"
+                "JIRA fields (source_type=JIRA):\n"
+                "  'issue_key'    — the issue key, e.g. DEV-3 (from 'key' in the Jira response)\n"
+                "  'project_key'  — the project key, e.g. DEV (from 'fields.project.key')\n"
+                "Confluence fields (source_type=CONFLUENCE):\n"
+                "  'page_id'      — numeric page ID (from 'id' in the Confluence response)\n"
+                "  'space_key'    — space key (from 'space.key' or 'spaceKey')\n"
+                "GitHub fields (source_type=GITHUB):\n"
+                "  'repo_name'    — repository name in owner/repo format\n"
+                "  'file_path'    — path to the file within the repository\n"
+                "  'commit_hash'  — full commit SHA\n"
+                "  'ref'          — branch or tag reference"
+            ),
+            outputs_to_state={"documents": {"source": "documents"}},
+            outputs_to_string={
+                "source": "documents",
+                "handler": _mcp_source_registered_summary,
+            },
+        )
+
         agent = MCPAgent(
             chat_generator=self._llm_generator_factory(),
-            tools=toolsets,
+            tools=[*toolsets, register_sources_tool],
             streaming_callback=print_streaming_chunk if self._is_dev else None,
         )
 

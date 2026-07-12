@@ -18,3 +18,18 @@ def _docs_to_summary(documents: list) -> str:
         "\nYou can now call fetch_neighbors_tool to expand context, filter_docs_tool to narrow results, or answer the question based on these documents."
     )
     return "\n".join(lines)
+
+
+def _mcp_source_registered_summary(documents: list) -> str:
+    """Confirm a single MCP source registration to the LLM."""
+    if not documents:
+        return "Source registration failed — no document was created."
+    doc = documents[0]
+    title = doc.meta.get("title", "Untitled")
+    source = doc.meta.get("source", "")
+    source_type = doc.meta.get("type", "UNKNOWN")
+    return (
+        f"Source registered: '{title}' (type={source_type}, url={source}). "
+        "Call register_mcp_sources_tool again for each additional source you used, "
+        "then give your final answer."
+    )
